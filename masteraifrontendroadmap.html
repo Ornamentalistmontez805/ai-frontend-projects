@@ -1,0 +1,1361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SNTL84 · AI Frontend Roadmap · File Viewer</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Syne+Mono&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0e0f;
+    --surface: #141517;
+    --surface2: #1b1d1f;
+    --border: #252729;
+    --accent: #c97d2a;
+    --accent2: #4a9c3f;
+    --accent3: #3a7fd4;
+    --text: #e8e4dc;
+    --muted: #6b6762;
+    --tag-bg: #1e2022;
+    --tier-a: #c97d2a;
+    --tier-b: #3a7fd4;
+    --tier-c: #4a9c3f;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 28px 40px 24px;
+    display: flex;
+    align-items: flex-end;
+    gap: 24px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 22px;
+    color: var(--accent);
+    letter-spacing: -0.5px;
+    line-height: 1;
+  }
+  .logo span { color: var(--text); }
+  .file-badge {
+    font-family: 'Syne Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    background: var(--tag-bg);
+    border: 1px solid var(--border);
+    padding: 4px 10px;
+    border-radius: 4px;
+    letter-spacing: 0.3px;
+  }
+  .header-stats {
+    margin-left: auto;
+    display: flex;
+    gap: 20px;
+    align-items: center;
+  }
+  .stat-pill {
+    font-family: 'Syne Mono', monospace;
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1px solid;
+  }
+  .stat-pill.amber { color: var(--accent); border-color: rgba(201,125,42,0.35); background: rgba(201,125,42,0.08); }
+  .stat-pill.green { color: var(--accent2); border-color: rgba(74,156,63,0.35); background: rgba(74,156,63,0.08); }
+  .stat-pill.blue  { color: var(--accent3); border-color: rgba(58,127,212,0.35); background: rgba(58,127,212,0.08); }
+
+  /* ── NAV TABS ── */
+  nav {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 40px;
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  nav::-webkit-scrollbar { display: none; }
+  .tab {
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    padding: 14px 20px;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    transition: color 0.2s, border-color 0.2s;
+    user-select: none;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* ── MAIN ── */
+  main {
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 36px 40px 80px;
+  }
+
+  /* ── SECTION ── */
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* ── FILTERS ── */
+  .filter-bar {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 28px;
+    align-items: center;
+  }
+  .filter-bar input[type="text"] {
+    font-family: 'Syne Mono', monospace;
+    font-size: 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 14px;
+    border-radius: 6px;
+    outline: none;
+    width: 220px;
+    transition: border-color 0.2s;
+  }
+  .filter-bar input[type="text"]:focus { border-color: var(--accent); }
+  .filter-bar input::placeholder { color: var(--muted); }
+  select {
+    font-family: 'Syne Mono', monospace;
+    font-size: 11px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 12px;
+    border-radius: 6px;
+    outline: none;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    padding-right: 28px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236b6762'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+  }
+  select:focus { border-color: var(--accent); }
+  .count-badge {
+    font-family: 'Syne Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    margin-left: auto;
+  }
+  .count-badge span { color: var(--accent); font-weight: 700; }
+
+  /* ── PROJECT GRID ── */
+  .project-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 16px;
+  }
+
+  .proj-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    cursor: pointer;
+    transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .proj-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--tier-color, var(--accent));
+    opacity: 0.7;
+  }
+  .proj-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+  .proj-card.tier-a { --tier-color: var(--tier-a); }
+  .proj-card.tier-b { --tier-color: var(--tier-b); }
+  .proj-card.tier-c { --tier-color: var(--tier-c); }
+
+  .proj-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  .proj-num {
+    font-family: 'Syne Mono', monospace;
+    font-size: 20px;
+    font-weight: 400;
+    color: var(--muted);
+    line-height: 1;
+    min-width: 28px;
+  }
+  .proj-name {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    line-height: 1.3;
+    color: var(--text);
+    flex: 1;
+  }
+  .tier-badge {
+    font-family: 'Syne Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+  }
+  .tier-badge.A { background: rgba(201,125,42,0.15); color: var(--tier-a); border: 1px solid rgba(201,125,42,0.3); }
+  .tier-badge.B { background: rgba(58,127,212,0.15); color: var(--tier-b); border: 1px solid rgba(58,127,212,0.3); }
+  .tier-badge.C { background: rgba(74,156,63,0.15); color: var(--tier-c); border: 1px solid rgba(74,156,63,0.3); }
+
+  .proj-desc {
+    font-size: 12.5px;
+    color: var(--muted);
+    line-height: 1.5;
+    margin-bottom: 14px;
+  }
+  .proj-meta {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+  .meta-chip {
+    font-family: 'Syne Mono', monospace;
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: var(--tag-bg);
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+  .meta-chip.hours { color: #a08060; border-color: rgba(160,128,96,0.3); }
+  .meta-chip.rev { color: var(--accent2); border-color: rgba(74,156,63,0.3); }
+  .meta-chip.level-beginner { color: #4a9c3f; }
+  .meta-chip.level-medium { color: #c9962a; }
+  .meta-chip.level-expert { color: #c93a3a; }
+
+  .proj-apis {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+  }
+  .api-tag {
+    font-family: 'Syne Mono', monospace;
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    background: rgba(58,127,212,0.1);
+    color: var(--accent3);
+    border: 1px solid rgba(58,127,212,0.2);
+  }
+  .skill-tag {
+    font-family: 'Syne Mono', monospace;
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    background: rgba(201,125,42,0.08);
+    color: rgba(201,125,42,0.8);
+    border: 1px solid rgba(201,125,42,0.15);
+  }
+
+  /* ── PROJECT DETAIL MODAL ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    z-index: 200;
+    backdrop-filter: blur(4px);
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 36px;
+    max-width: 680px;
+    width: 90%;
+    max-height: 85vh;
+    overflow-y: auto;
+    position: relative;
+  }
+  .modal-close {
+    position: absolute;
+    top: 16px; right: 20px;
+    font-size: 20px;
+    color: var(--muted);
+    cursor: pointer;
+    background: none;
+    border: none;
+    line-height: 1;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: color 0.2s, background 0.2s;
+  }
+  .modal-close:hover { color: var(--text); background: var(--surface2); }
+  .modal-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 24px;
+    font-weight: 800;
+    margin-bottom: 6px;
+    line-height: 1.2;
+    padding-right: 40px;
+  }
+  .modal-id { font-family: 'Syne Mono', monospace; font-size: 13px; color: var(--muted); margin-bottom: 18px; }
+  .modal-desc { font-size: 14px; color: var(--text); line-height: 1.65; margin-bottom: 24px; }
+  .detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .detail-item { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; }
+  .detail-label { font-family: 'Syne Mono', monospace; font-size: 10px; color: var(--muted); letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 4px; }
+  .detail-value { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px; }
+  .detail-value.green { color: var(--accent2); }
+  .detail-value.amber { color: var(--accent); }
+  .detail-value.blue { color: var(--accent3); }
+
+  .modal-section-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+  .tag-group { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 20px; }
+  .modal-mono {
+    font-family: 'Syne Mono', monospace;
+    font-size: 12px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 16px;
+    color: var(--muted);
+    line-height: 1.7;
+    margin-bottom: 16px;
+  }
+  .modal-mono code { color: var(--accent); }
+
+  /* ── README TAB ── */
+  .readme-content {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 32px 36px;
+    max-width: 860px;
+  }
+  .readme-content h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    margin: 28px 0 12px;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .readme-content h2:first-child { margin-top: 0; }
+  .readme-content h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    margin: 20px 0 8px;
+    color: var(--accent);
+  }
+  .readme-content p { font-size: 13.5px; color: var(--muted); line-height: 1.65; margin-bottom: 12px; }
+  .readme-content p strong { color: var(--text); font-weight: 500; }
+  .readme-content code {
+    font-family: 'Syne Mono', monospace;
+    font-size: 11px;
+    background: var(--tag-bg);
+    padding: 2px 6px;
+    border-radius: 3px;
+    color: var(--accent);
+  }
+  .readme-content pre {
+    font-family: 'Syne Mono', monospace;
+    font-size: 11px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+    overflow-x: auto;
+    margin: 12px 0 16px;
+    color: var(--text);
+    line-height: 1.6;
+  }
+  .readme-content hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+  .readme-content blockquote {
+    border-left: 3px solid var(--accent);
+    padding-left: 16px;
+    color: var(--muted);
+    font-style: italic;
+    margin: 12px 0;
+  }
+
+  /* ── TABLE ── */
+  .md-table { width: 100%; border-collapse: collapse; margin: 12px 0 20px; font-size: 12.5px; }
+  .md-table th {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 8px 12px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+  }
+  .md-table td {
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    vertical-align: top;
+  }
+  .md-table tr:hover td { background: var(--surface2); }
+  .md-table td a { color: var(--accent3); text-decoration: none; }
+  .md-table td a:hover { text-decoration: underline; }
+  .md-table td strong { color: var(--accent); }
+
+  /* ── PROFILE README ── */
+  .profile-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 32px; max-width: 760px; }
+  .case-study { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin: 16px 0; }
+  .case-study h4 { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; margin-bottom: 12px; color: var(--text); }
+
+  /* ── SCRIPT TAB ── */
+  .script-view {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .script-header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .script-header-title {
+    font-family: 'Syne Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    flex: 1;
+  }
+  .section-block {
+    border-bottom: 1px solid var(--border);
+  }
+  .section-block:last-child { border-bottom: none; }
+  .section-toggle {
+    width: 100%;
+    background: none;
+    border: none;
+    padding: 14px 20px;
+    text-align: left;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    transition: background 0.15s;
+  }
+  .section-toggle:hover { background: var(--surface2); }
+  .section-toggle .arrow { color: var(--muted); font-size: 10px; transition: transform 0.2s; margin-left: auto; }
+  .section-toggle.open .arrow { transform: rotate(90deg); }
+  .section-body {
+    display: none;
+    padding: 0 20px 20px;
+  }
+  .section-body.open { display: block; }
+  .code-block {
+    font-family: 'Syne Mono', monospace;
+    font-size: 11px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+    color: var(--text);
+    line-height: 1.7;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .kw { color: #7eb5e0; }
+  .fn { color: #e0c36e; }
+  .str { color: #8fc07a; }
+  .cm { color: #5a6a5a; font-style: italic; }
+  .num { color: #d4a8e0; }
+  .key { color: #e09a60; }
+
+  /* ── GIF CHECKLIST ── */
+  .gif-list { display: flex; flex-direction: column; gap: 8px; }
+  .gif-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+  .gif-check {
+    width: 16px; height: 16px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    background: var(--surface2);
+    flex-shrink: 0;
+  }
+  .gif-id { font-family: 'Syne Mono', monospace; font-size: 11px; color: var(--muted); min-width: 28px; }
+  .gif-name { flex: 1; }
+  .gif-tier { margin-left: auto; }
+
+  /* ── SECTION LABEL ── */
+  .sec-label {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .sec-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  /* ── HIDDEN ── */
+  .hidden { display: none !important; }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="logo">SNTL<span>84</span></div>
+  </div>
+  <div class="file-badge">deepseek_javascript_20260503_166a74.js · 725 lines</div>
+  <div class="header-stats">
+    <div class="stat-pill amber">45 Projects</div>
+    <div class="stat-pill green">₹8,23,000+ potential</div>
+    <div class="stat-pill blue">494h total build</div>
+  </div>
+</header>
+
+<nav>
+  <div class="tab active" data-tab="projects">🗂 All Projects</div>
+  <div class="tab" data-tab="main-readme">📄 Main README</div>
+  <div class="tab" data-tab="profile-readme">👤 Profile README</div>
+  <div class="tab" data-tab="gif-status">🎬 GIF Checklist</div>
+  <div class="tab" data-tab="script">⚙ Script Logic</div>
+  <div class="tab" data-tab="structure">📁 Repo Structure</div>
+</nav>
+
+<main>
+
+  <!-- ═══════════════ TAB: PROJECTS ═══════════════ -->
+  <div class="section active" id="tab-projects">
+    <div class="filter-bar">
+      <input type="text" id="search" placeholder="🔍  Search projects…">
+      <select id="filter-level">
+        <option value="">All Levels</option>
+        <option value="beginner">🟢 Beginner</option>
+        <option value="medium">🟡 Medium</option>
+        <option value="expert">🔴 Expert</option>
+      </select>
+      <select id="filter-type">
+        <option value="">All Types</option>
+        <option value="api">🤖 AI API (#01–30)</option>
+        <option value="creative">🎨 Frontend Creative (#31–45)</option>
+      </select>
+      <select id="filter-tier">
+        <option value="">All Tiers</option>
+        <option value="A">Tier A (Priority)</option>
+        <option value="B">Tier B</option>
+        <option value="C">Tier C</option>
+      </select>
+      <select id="filter-api">
+        <option value="">All APIs</option>
+        <option value="Claude">Claude</option>
+        <option value="OpenAI">OpenAI</option>
+        <option value="DeepSeek">DeepSeek</option>
+        <option value="Perplexity">Perplexity</option>
+        <option value="Grok">Grok</option>
+        <option value="Three.js">Three.js</option>
+        <option value="TensorFlow.js">TensorFlow.js</option>
+        <option value="WebRTC">WebRTC</option>
+      </select>
+      <div class="count-badge">Showing <span id="count">45</span> of 45</div>
+    </div>
+    <div class="project-grid" id="project-grid"></div>
+  </div>
+
+  <!-- ═══════════════ TAB: MAIN README ═══════════════ -->
+  <div class="section" id="tab-main-readme">
+    <div class="readme-content">
+      <h2>⚡ AI Frontend Projects — Main README</h2>
+      <blockquote>45 production-ready AI frontend projects — from a 2-hour chat UI to a full SaaS dashboard — each with a monetization path, build time, tech stack, and real revenue targets in ₹INR. Built for developers who ship and founders who move fast.</blockquote>
+
+      <hr>
+      <h2>📊 At a Glance</h2>
+      <table class="md-table">
+        <thead><tr><th>Metric</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr><td>🗂 Total Projects</td><td><strong>45</strong></td></tr>
+          <tr><td>⏱ Total Build Hours</td><td><strong>494h</strong> across all projects</td></tr>
+          <tr><td>💰 Revenue Range</td><td><strong>₹2,000 → ₹80,000 / month</strong> per project</td></tr>
+          <tr><td>💎 Combined Potential</td><td><strong>₹8,23,000+ / month</strong> if all monetized</td></tr>
+          <tr><td>🟢 Beginner Projects</td><td>10 (≤4h each)</td></tr>
+          <tr><td>🟡 Medium Projects</td><td>18 (5–10h each)</td></tr>
+          <tr><td>🔴 Expert Projects</td><td>17 (15–40h each)</td></tr>
+          <tr><td>🤖 AI API Projects</td><td>30 (#01–#30)</td></tr>
+          <tr><td>🎨 Frontend/Creative</td><td>15 (#31–#45)</td></tr>
+        </tbody>
+      </table>
+
+      <hr>
+      <h2>📁 Repo Structure</h2>
+      <pre>ai-frontend-projects/
+│
+├── api-projects/              ← #01–30 · Claude, OpenAI, Perplexity, Grok, DeepSeek
+│   ├── 01-chat-interface/
+│   ├── 02-text-summarizer/
+│   ├── ...
+│   └── 30-ai-saas-dashboard/
+│
+├── frontend-creative/         ← #31–45 · TF.js, WebRTC, Three.js, offline AI
+│   ├── 31-voice-gradient-gen/
+│   ├── 32-emoji-pixel-art/
+│   ├── ...
+│   └── 45-vr-viewer/
+│
+├── master_ai_frontend_roadmap.html   ← Interactive filtered roadmap
+└── README.md
+
+Each project folder:
+  project-name/
+  ├── index.html       ← The complete working build
+  ├── README.md        ← Project-specific notes, API setup, monetization tips
+  └── assets/          ← Any images, icons, or supplementary files</pre>
+
+      <hr>
+      <h2>🟢 Beginner Projects — Ship in 1–3 Days</h2>
+      <table class="md-table">
+        <thead><tr><th>#</th><th>Project</th><th>APIs</th><th>Skills</th><th>Hours</th><th>Rev/mo</th></tr></thead>
+        <tbody id="tbl-beginner"></tbody>
+      </table>
+
+      <h2>🟡 Medium Projects — Ship in 3–6 Days</h2>
+      <table class="md-table">
+        <thead><tr><th>#</th><th>Project</th><th>APIs</th><th>Skills</th><th>Hours</th><th>Rev/mo</th></tr></thead>
+        <tbody id="tbl-medium"></tbody>
+      </table>
+
+      <h2>🔴 Expert Projects — Ship in 8–20 Days</h2>
+      <table class="md-table">
+        <thead><tr><th>#</th><th>Project</th><th>APIs</th><th>Skills</th><th>Hours</th><th>Rev/mo</th></tr></thead>
+        <tbody id="tbl-expert"></tbody>
+      </table>
+
+      <hr>
+      <h2>🛠 Tech Stack Coverage</h2>
+      <pre>AI APIs              OpenAI  ·  Claude (Anthropic)  ·  Perplexity  ·  Grok  ·  DeepSeek
+Browser APIs         fetch   ·  Web Speech API  ·  WebRTC  ·  Canvas 2D  ·  IndexedDB
+                     FileReader  ·  Clipboard API  ·  MediaDevices  ·  Web Workers
+ML in Browser        TensorFlow.js  ·  face-api.js  ·  Transformers.js  ·  WASM
+3D & WebGL           Three.js  ·  GLSL shaders  ·  particle systems  ·  raycasting
+Data Visualization   Chart.js  ·  D3.js  ·  SVG tree rendering  ·  streaming charts
+Code Editing         CodeMirror 6  ·  diff view  ·  syntax highlighting
+Parsing              PapaParse (CSV)  ·  PDF.js  ·  JSON-mode prompting</pre>
+
+      <hr>
+      <h2>🚀 Quick Start</h2>
+      <h3>Option 1 — Clone and open in browser</h3>
+      <pre>git clone https://github.com/SNTL84/ai-frontend-projects.git
+cd ai-frontend-projects
+
+# Open the interactive roadmap
+open master_ai_frontend_roadmap.html
+
+# Jump straight into a project
+open api-projects/01-chat-interface/index.html</pre>
+
+      <h3>Option 2 — Pick a project, add your API key</h3>
+      <p>Each project uses a single <code>index.html</code>. Open it, find:</p>
+      <pre>const API_KEY = "YOUR_API_KEY_HERE";</pre>
+      <p>Replace with your key, save, open in browser. That's it.</p>
+
+      <h3>Option 3 — View the live roadmap</h3>
+      <blockquote>🗺 <strong>sntl84.github.io/ai-frontend-projects</strong> — Filter by level, API, revenue, and search across all 45 projects.</blockquote>
+
+      <hr>
+      <h2>💡 Monetization Paths — Quick Reference</h2>
+      <table class="md-table">
+        <thead><tr><th>Path</th><th>Best Projects</th><th>Revenue Model</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Gumroad micro-tool</strong></td><td>#02 #05 #31 #35</td><td>One-time ₹299–₹999 download</td></tr>
+          <tr><td><strong>Freelance delivery</strong></td><td>#01 #06 #12 #13 #18</td><td>₹10K–₹50K per client build</td></tr>
+          <tr><td><strong>SaaS subscription</strong></td><td>#14 #19 #23 #27 #30</td><td>₹499–₹2,999/user/month</td></tr>
+          <tr><td><strong>EdTech integration</strong></td><td>#11 #14 #22 #26</td><td>Platform license or white-label</td></tr>
+          <tr><td><strong>Agency automation</strong></td><td>#03 #09 #13 #15</td><td>Retainer ₹15K–₹40K/month</td></tr>
+          <tr><td><strong>Pay-per-use / API</strong></td><td>#09 #10 #20 #24</td><td>Metered billing per query</td></tr>
+          <tr><td><strong>NFT / digital goods</strong></td><td>#42 #44</td><td>Asset packs, one-time sales</td></tr>
+          <tr><td><strong>Enterprise consulting</strong></td><td>#23 #25 #27 #30</td><td>₹50K–₹2L project engagements</td></tr>
+        </tbody>
+      </table>
+
+      <hr>
+      <h2>🧭 Suggested Learning Path</h2>
+      <pre>Week 1–2   ·  Build #01 → #08   (Beginner · AI APIs)
+Week 3     ·  Build #31 → #35   (Beginner · Frontend Creative)
+Week 4–5   ·  Build #09 → #18   (Medium · AI APIs)
+Week 6     ·  Build #36 → #40   (Medium · Frontend Creative)
+Week 7–10  ·  Build #19 → #30   (Expert · AI APIs)
+Week 11–14 ·  Build #41 → #45   (Expert · Frontend Creative)</pre>
+      <blockquote>Pro tip from Milan: Don't just build — monetize each project as you finish it. Even project #05 (Joke Generator) can earn ₹2K/month as a Gumroad tool. Ship, sell, repeat.</blockquote>
+
+      <hr>
+      <h2>🤝 Contributing</h2>
+      <p>Pull requests are welcome. Good contributions:</p>
+      <p>• Adding a working <code>index.html</code> for any project that's missing one<br>
+      • Improving build instructions or adding API setup steps<br>
+      • Translating the roadmap README (Hindi, Gujarati, etc.)<br>
+      • Reporting broken API endpoints (models update fast)</p>
+      <pre>git checkout -b feature/your-project-name
+# build your thing
+git commit -m "add: 01-chat-interface working build"
+git push origin feature/your-project-name
+# open a PR</pre>
+
+      <hr>
+      <h2>👤 About the Author</h2>
+      <p><strong>Milan · SNTL84</strong> — AI Workflow Professional · Full-Stack Developer · Surat, India</p>
+      <blockquote>"Automate What's Costing You Money."</blockquote>
+      <p>AI Systems · Full-Stack Builds · Supply Chain Business Intelligence<br>Built for founders who move fast and waste nothing.</p>
+      <table class="md-table">
+        <thead><tr><th>Platform</th><th>Link</th></tr></thead>
+        <tbody>
+          <tr><td>🌐 Website</td><td><a href="https://desidevloper.com/" target="_blank">desidevloper.com</a></td></tr>
+          <tr><td>💬 WhatsApp</td><td><a href="https://wa.me/919727413309" target="_blank">+91 97274 13309</a></td></tr>
+          <tr><td>🔗 LinkedIn</td><td><a href="https://www.linkedin.com/in/sntl2784" target="_blank">linkedin.com/in/sntl2784</a></td></tr>
+          <tr><td>💻 GitHub</td><td><a href="https://github.com/SNTL84" target="_blank">github.com/SNTL84</a></td></tr>
+        </tbody>
+      </table>
+
+      <hr>
+      <p style="color:var(--muted); font-size:12px;">MIT © 2025 Milan · SNTL84 · Free to use, build on, and sell. Attribution appreciated but not required.</p>
+    </div>
+  </div>
+
+  <!-- ═══════════════ TAB: PROFILE README ═══════════════ -->
+  <div class="section" id="tab-profile-readme">
+    <div class="profile-card">
+      <h2 style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;margin-bottom:6px;">Profile README — SNTL84/SNTL84</h2>
+      <p style="color:var(--muted);font-size:12px;margin-bottom:24px;">This is the GitHub profile README generated by the script for the <code>SNTL84/SNTL84</code> special repo.</p>
+
+      <div class="sec-label">Who I Help</div>
+      <p style="margin-bottom:16px;"><strong>Founders · Agency owners · SMB operators</strong> who are losing hours to manual work every week.</p>
+      <p style="margin-bottom:24px;">You don't need a larger team — you need automated systems that do the work of 3 people without the overhead.</p>
+
+      <div class="sec-label">What I Deliver</div>
+      <table class="md-table" style="margin-bottom:24px;">
+        <thead><tr><th>Deliverable</th><th>Real Example</th></tr></thead>
+        <tbody>
+          <tr><td><strong>AI Hiring Funnels</strong></td><td>Resume screening + interview scheduling fully automated</td></tr>
+          <tr><td><strong>Lead Enrichment Systems</strong></td><td>Scrape → enrich → score → nurture, zero human clicks</td></tr>
+          <tr><td><strong>Backoffice OS</strong></td><td>Notion + Airtable + n8n — your entire ops one dashboard</td></tr>
+          <tr><td><strong>Full-Stack AI Apps</strong></td><td>Custom dashboards, chatbots, internal tools (React, Node, AI APIs)</td></tr>
+          <tr><td><strong>Workflow Automations</strong></td><td>Web scraping, CRM sync, invoice generation, email auto-reply</td></tr>
+        </tbody>
+      </table>
+
+      <div class="sec-label">Why I'm Different</div>
+      <p style="margin-bottom:8px;">I don't just code. I build <strong>operations-first automation</strong>.</p>
+      <p style="margin-bottom:8px;">Every line of code is measured against one question: <em>Does this save more time than it costs to build?</em></p>
+      <p style="margin-bottom:24px;">My background in <strong>supply chain business intelligence</strong> means I think in workflows, not features.</p>
+
+      <div class="sec-label">Results I've Shipped</div>
+
+      <div class="case-study">
+        <h4>1. AI Invoice Processor for a Logistics Agency</h4>
+        <table class="md-table">
+          <tbody>
+            <tr><td><strong>Problem</strong></td><td>Agency spent 12h/week manually extracting invoice data from 200+ PDFs and entering into their ERP</td></tr>
+            <tr><td><strong>What I built</strong></td><td>n8n workflow + GPT-4 vision → parse PDFs, validate fields, push to ERP via API</td></tr>
+            <tr><td><strong>Tech used</strong></td><td>n8n, OpenAI Vision, PostgreSQL, REST API</td></tr>
+            <tr><td><strong>Outcome</strong></td><td>Invoice processing time: <strong>12h → 12min/week.</strong> Errors dropped 98%.</td></tr>
+          </tbody>
+        </table>
+        <p style="font-size:11px;color:var(--muted);margin-top:8px;">🎬 GIF placeholder: drag PDF → AI extracts → ERP updates in real-time</p>
+      </div>
+
+      <div class="case-study">
+        <h4>2. AI Lead Enrichment for a B2B SaaS</h4>
+        <table class="md-table">
+          <tbody>
+            <tr><td><strong>Problem</strong></td><td>Sales team spent 30min per lead manually finding contact info, revenue, tech stack</td></tr>
+            <tr><td><strong>What I built</strong></td><td>AI agent: company name → scrapes LinkedIn/Crunchbase/website → returns enriched JSON</td></tr>
+            <tr><td><strong>Tech used</strong></td><td>Python, BeautifulSoup, OpenAI function calling, Airtable</td></tr>
+            <tr><td><strong>Outcome</strong></td><td>Lead research time: <strong>30min → 2min.</strong> Sales closed 40% more deals.</td></tr>
+          </tbody>
+        </table>
+        <p style="font-size:11px;color:var(--muted);margin-top:8px;">🎬 GIF placeholder: paste company name → agent runs → enriched data appears</p>
+      </div>
+
+      <div class="case-study">
+        <h4>3. Full-Stack AI Dashboard for an EdTech Founder</h4>
+        <table class="md-table">
+          <tbody>
+            <tr><td><strong>Problem</strong></td><td>No way to track student engagement across multiple courses (live, recorded, quizzes)</td></tr>
+            <tr><td><strong>What I built</strong></td><td>React + Node dashboard with AI-powered churn prediction and personalised next-step suggestions</td></tr>
+            <tr><td><strong>Tech used</strong></td><td>React, Node.js, OpenAI, PostgreSQL, Chart.js</td></tr>
+            <tr><td><strong>Outcome</strong></td><td>Founder now predicts which students will drop out before they do — <strong>retention up 25%</strong></td></tr>
+          </tbody>
+        </table>
+        <p style="font-size:11px;color:var(--muted);margin-top:8px;">🎬 GIF placeholder: log in → see engagement heatmap → AI suggests intervention</p>
+      </div>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:24px 0;">
+      <p><strong>Connect:</strong></p>
+      <p style="font-size:13px;margin-top:8px;">
+        🌐 <a href="https://desidevloper.com/" target="_blank" style="color:var(--accent3);">desidevloper.com</a> &nbsp;·&nbsp;
+        💼 <a href="https://www.linkedin.com/in/sntl2784" target="_blank" style="color:var(--accent3);">LinkedIn</a> &nbsp;·&nbsp;
+        🐙 <a href="https://github.com/SNTL84" target="_blank" style="color:var(--accent3);">GitHub/SNTL84</a> &nbsp;·&nbsp;
+        📱 <a href="https://wa.me/919727413309" target="_blank" style="color:var(--accent3);">WhatsApp</a>
+      </p>
+      <p style="font-size:11px;color:var(--muted);margin-top:16px;font-style:italic;">If you're a founder who needs to stop doing manual work and start scaling — reach out. I build the systems that let you sleep through the night.</p>
+    </div>
+  </div>
+
+  <!-- ═══════════════ TAB: GIF CHECKLIST ═══════════════ -->
+  <div class="section" id="tab-gif-status">
+    <p style="color:var(--muted);font-size:13px;margin-bottom:20px;">This is the <code>GIFS_STATUS.md</code> checklist generated by the script. Record in Tier A → B → C order for maximum portfolio impact.</p>
+
+    <div class="sec-label" style="margin-bottom:12px;">Special Items (Profile + Main Repo)</div>
+    <div class="gif-list" style="margin-bottom:24px;">
+      <div class="gif-item">
+        <div class="gif-check"></div>
+        <div class="gif-id">—</div>
+        <div class="gif-name">SNTL84/SNTL84 profile overview <span style="font-size:11px;color:var(--muted);">· 60 seconds</span></div>
+        <div class="gif-tier"><span class="tier-badge A">PROFILE</span></div>
+      </div>
+      <div class="gif-item">
+        <div class="gif-check"></div>
+        <div class="gif-id">—</div>
+        <div class="gif-name">ai-frontend-projects main README <span style="font-size:11px;color:var(--muted);">· 90 seconds</span></div>
+        <div class="gif-tier"><span class="tier-badge A">MAIN</span></div>
+      </div>
+    </div>
+
+    <div class="sec-label" style="margin-bottom:12px;">Tier A — Record First (Highest Impact)</div>
+    <div class="gif-list" id="gif-a" style="margin-bottom:24px;"></div>
+
+    <div class="sec-label" style="margin-bottom:12px;">Tier B</div>
+    <div class="gif-list" id="gif-b" style="margin-bottom:24px;"></div>
+
+    <div class="sec-label" style="margin-bottom:12px;">Tier C — Remaining Projects</div>
+    <div class="gif-list" id="gif-c"></div>
+  </div>
+
+  <!-- ═══════════════ TAB: SCRIPT LOGIC ═══════════════ -->
+  <div class="section" id="tab-script">
+    <p style="color:var(--muted);font-size:13px;margin-bottom:20px;">Full breakdown of the Node.js script structure — what each section does and the actual code logic.</p>
+    <div class="script-view">
+      <div class="script-header">
+        <div class="script-header-title">📄 deepseek_javascript_20260503_166a74.js — annotated structure</div>
+      </div>
+
+      <div class="section-block">
+        <button class="section-toggle open" onclick="toggleSection(this)">
+          <span>§1 · Imports &amp; Project Data Array (lines 1–55)</span>
+          <span class="arrow">▶</span>
+        </button>
+        <div class="section-body open">
+          <div class="code-block"><span class="kw">const</span> fs = <span class="fn">require</span>(<span class="str">'fs'</span>);
+<span class="kw">const</span> path = <span class="fn">require</span>(<span class="str">'path'</span>);
+
+<span class="cm">// 45 projects defined as an array of objects</span>
+<span class="cm">// Each project has: id, name, tier, level, hours, rev, folder,</span>
+<span class="cm">// srcType (api | creative), apis[], skills[], desc</span>
+
+<span class="kw">const</span> projects = [
+  <span class="cm">// AI API Projects #01–#30 (srcType: "api")</span>
+  { <span class="key">id</span>: <span class="str">"01"</span>, <span class="key">name</span>: <span class="str">"AI Chat Interface"</span>, <span class="key">tier</span>: <span class="str">"B"</span>, <span class="key">level</span>: <span class="str">"beginner"</span>, <span class="key">hours</span>: <span class="num">2</span>, <span class="key">rev</span>: <span class="num">5000</span>, ... },
+  <span class="cm">// ... all 45 projects (lines 9–54)</span>
+
+  <span class="cm">// Frontend / Creative #31–#45 (srcType: "creative")</span>
+  { <span class="key">id</span>: <span class="str">"45"</span>, <span class="key">name</span>: <span class="str">"VR 360° Viewer with AI Narration"</span>, <span class="key">tier</span>: <span class="str">"C"</span>, ... }
+];</div>
+          <p style="color:var(--muted);font-size:12px;margin-top:10px;">The <code>projects</code> array is the single source of truth — everything else is generated from it. Each entry drives the README, folder name, GIF checklist, and HTML roadmap.</p>
+        </div>
+      </div>
+
+      <div class="section-block">
+        <button class="section-toggle" onclick="toggleSection(this)">
+          <span>§2 · Helper Functions (lines 57–60)</span>
+          <span class="arrow">▶</span>
+        </button>
+        <div class="section-body">
+          <div class="code-block"><span class="cm">// Generates URL-safe slug from project name</span>
+<span class="kw">function</span> <span class="fn">slug</span>(name) {
+  <span class="kw">return</span> name.<span class="fn">toLowerCase</span>().<span class="fn">replace</span>(<span class="str">/[^a-z0-9]+/g</span>, <span class="str">'-'</span>).<span class="fn">replace</span>(<span class="str">/^-|-$/g</span>, <span class="str">''</span>);
+}</div>
+        </div>
+      </div>
+
+      <div class="section-block">
+        <button class="section-toggle" onclick="toggleSection(this)">
+          <span>§3 · generateProjectReadme() — Per-Project README Generator (lines 62–145)</span>
+          <span class="arrow">▶</span>
+        </button>
+        <div class="section-body">
+          <div class="code-block"><span class="kw">function</span> <span class="fn">generateProjectReadme</span>(proj) {
+  <span class="cm">// Returns a markdown string for each project's README.md</span>
+  <span class="cm">// Includes:</span>
+  <span class="cm">//  · GIF placeholder block with recording script</span>
+  <span class="cm">//  · Project details table (hours, rev, tier, apis, skills, folder)</span>
+  <span class="cm">//  · 5-Step GIF Recording Formula (0–45s breakdown)</span>
+  <span class="cm">//  · Getting Started instructions</span>
+  <span class="cm">//  · Environment variables section</span>
+  <span class="cm">//  · Monetization path (auto-generated by revenue tier)</span>
+  <span class="cm">//  · Attribution footer link to main repo</span>
+
+  <span class="cm">// Monetization logic:</span>
+  <span class="kw">if</span> (proj.rev >= <span class="num">50000</span>) <span class="str">"Enterprise / SaaS"</span>  <span class="cm">// ₹50K–₹80K/mo</span>
+  <span class="kw">else if</span> (proj.rev >= <span class="num">20000</span>) <span class="str">"Freelance + SaaS"</span> <span class="cm">// ₹20K–₹50K/client</span>
+  <span class="kw">else</span> <span class="str">"Gumroad / Micro-tool"</span>              <span class="cm">// ₹299–₹999 one-time</span>
+}</div>
+          <p style="color:var(--muted);font-size:12px;margin-top:10px;"><strong>5-Step GIF Recording Formula</strong> embedded in every README:<br>
+          Step 1 (0–5s) empty state → Step 2 (5–20s) paste real data → Step 3 (20–30s) full render → Step 4 (30–40s) one interaction → Step 5 (40–45s) final result freeze.</p>
+        </div>
+      </div>
+
+      <div class="section-block">
+        <button class="section-toggle" onclick="toggleSection(this)">
+          <span>§4 · mainReadmeContent — Full Main README String (lines 147–493)</span>
+          <span class="arrow">▶</span>
+        </button>
+        <div class="section-body">
+          <div class="code-block"><span class="kw">const</span> mainReadmeContent = <span class="str">`
+  &lt;div align="center"&gt; ... capsule-render header banner ...
+  ... badges (Stars, Forks, License, Projects, Revenue) ...
+  ... 90-second GIF placeholder with recording script ...
+  ... ⚡ What This Repo Gives You ...
+  ... 📊 At a Glance stats table ...
+  ... 📁 Repo Structure tree ...
+  ... 🟢 Beginner / 🟡 Medium / 🔴 Expert project tables ...
+  ... 🛠 Tech Stack Coverage ...
+  ... 🚀 Quick Start (3 options) ...
+  ... 💡 Monetization Paths table ...
+  ... 🧭 Suggested Learning Path ...
+  ... 🤝 Contributing ...
+  ... 👤 About the Author ...
+  ... 📄 MIT License ...
+  ... footer banner ...
+`</span>;</div>
+          <p style="color:var(--muted);font-size:12px;margin-top:10px;">This is a static template string (~350 lines of markdown). Written to <code>README.md</code> at the repo root by <code>generateRepo()</code>.</p>
+        </div>
+      </div>
+
+      <div class="section-block">
+        <button class="section-toggle" onclick="toggleSection(this)">
+          <span>§5 · profileReadme — SNTL84/SNTL84 Profile README String (lines 495–612)</span>
+          <span class="arrow">▶</span>
+        </button>
+        <div class="section-body">
+          <div class="code-block"><span class="kw">const</span> profileReadme = <span class="str">`
+  ... 60-second GIF placeholder + recording script ...
+  ... "Who I help" section ...
+  ... "What I deliver" deliverables table ...
+  ... "Why I'm different" — operations-first positioning ...
+  ... 3 Case Studies with outcome tables + GIF placeholders:
+      1. AI Invoice Processor (Logistics): 12h → 12min/week
+      2. AI Lead Enrichment (B2B SaaS): 30min → 2min per lead
+      3. Full-Stack AI Dashboard (EdTech): retention +25%
+  ... Contact CTA + platform links ...
+`</span>;</div>
+          <p style="color:var(--muted);font-size:12px;margin-top:10px;">Note: this string is generated but <em>not written to disk</em> in the current script (lines 620–725 only call <code>mainReadmeContent</code>). It's meant to be manually pasted into the <code>SNTL84/SNTL84</code> special repository.</p>
+        </div>
+      </div>
+
+      <div class="section-block">
+        <button class="section-toggle" onclick="toggleSection(this)">
+          <span>§6 · writeFileSyncRecursive() — Safe File Writer (lines 614–619)</span>
+          <span class="arrow">▶</span>
+        </button>
+        <div class="section-body">
+          <div class="code-block"><span class="kw">function</span> <span class="fn">writeFileSyncRecursive</span>(filePath, content) {
+  <span class="kw">const</span> dir = path.<span class="fn">dirname</span>(filePath);
+  <span class="kw">if</span> (!fs.<span class="fn">existsSync</span>(dir)) fs.<span class="fn">mkdirSync</span>(dir, { <span class="key">recursive</span>: <span class="kw">true</span> });
+  fs.<span class="fn">writeFileSync</span>(filePath, content, <span class="str">'utf8'</span>);
+}</div>
+          <p style="color:var(--muted);font-size:12px;margin-top:10px;">Creates the full directory tree before writing, so nested folders like <code>api-projects/01-chat-interface/README.md</code> are created safely in one call.</p>
+        </div>
+      </div>
+
+      <div class="section-block">
+        <button class="section-toggle" onclick="toggleSection(this)">
+          <span>§7 · generateRepo() — Main Orchestrator (lines 621–722)</span>
+          <span class="arrow">▶</span>
+        </button>
+        <div class="section-body">
+          <div class="code-block"><span class="kw">function</span> <span class="fn">generateRepo</span>() {
+  <span class="kw">const</span> root = process.<span class="fn">cwd</span>(); <span class="cm">// Run from your repo root</span>
+
+  <span class="cm">// 1. Create top-level folders</span>
+  fs.<span class="fn">mkdirSync</span>(path.<span class="fn">join</span>(root, <span class="str">'assets/demos'</span>), { <span class="key">recursive</span>: <span class="kw">true</span> });
+  fs.<span class="fn">mkdirSync</span>(path.<span class="fn">join</span>(root, <span class="str">'api-projects'</span>), { <span class="key">recursive</span>: <span class="kw">true</span> });
+  fs.<span class="fn">mkdirSync</span>(path.<span class="fn">join</span>(root, <span class="str">'frontend-creative'</span>), { <span class="key">recursive</span>: <span class="kw">true</span> });
+
+  <span class="cm">// 2. Write assets/demos/.gitkeep</span>
+  <span class="fn">writeFileSyncRecursive</span>(...);
+
+  <span class="cm">// 3. For each of 45 projects:</span>
+  projects.<span class="fn">forEach</span>(proj => {
+    <span class="kw">const</span> folder = proj.srcType === <span class="str">'api'</span> ? <span class="str">'api-projects'</span> : <span class="str">'frontend-creative'</span>;
+    <span class="cm">// Write README.md (from generateProjectReadme)</span>
+    <span class="cm">// Write placeholder index.html if missing</span>
+  });
+
+  <span class="cm">// 4. Write README.md (main repo README)</span>
+  <span class="cm">// 5. Write GIFS_STATUS.md (checklist, auto-sorted by tier)</span>
+  <span class="cm">// 6. Copy master_ai_frontend_roadmap_v3.html as master_ai_frontend_roadmap.html</span>
+  <span class="cm">//    (reads CSS + body from the v3 file via fs.readFileSync)</span>
+  <span class="cm">// 7. Write .gitignore</span>
+  <span class="cm">// 8. Write LICENSE (MIT)</span>
+
+  console.<span class="fn">log</span>(<span class="str">'✅ Repo generation complete!'</span>);
+  <span class="cm">// Prints next steps: git init, add, commit, remote add, push</span>
+  <span class="cm">// Note: create SNTL84/SNTL84 repo separately for profile README</span>
+}
+
+<span class="fn">generateRepo</span>(); <span class="cm">// Entry point (line 724)</span></div>
+          <p style="color:var(--muted);font-size:12px;margin-top:10px;"><strong>Dependency:</strong> The script expects <code>master_ai_frontend_roadmap_v3.html</code> to exist in the same directory (<code>__dirname</code>) — it reads the CSS and full body from that file to build the final roadmap HTML.</p>
+        </div>
+      </div>
+
+      <div class="section-block">
+        <button class="section-toggle" onclick="toggleSection(this)">
+          <span>§8 · Generated Files Summary</span>
+          <span class="arrow">▶</span>
+        </button>
+        <div class="section-body">
+          <div class="code-block">Files written by generateRepo():
+
+  api-projects/
+    01-chat-interface/README.md         ← generateProjectReadme(proj#01)
+    01-chat-interface/index.html        ← placeholder
+    ... × 30 projects
+
+  frontend-creative/
+    31-voice-gradient-gen/README.md     ← generateProjectReadme(proj#31)
+    31-voice-gradient-gen/index.html    ← placeholder
+    ... × 15 projects
+
+  assets/demos/.gitkeep                 ← empty gitkeep
+  README.md                             ← mainReadmeContent
+  GIFS_STATUS.md                        ← tier-sorted GIF checklist
+  master_ai_frontend_roadmap.html       ← copied from v3 file
+  .gitignore                            ← standard ignores
+  LICENSE                               ← MIT 2025 Milan (SNTL84)
+
+NOT written (manual step):
+  SNTL84/SNTL84 profile README         ← paste profileReadme manually</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════ TAB: STRUCTURE ═══════════════ -->
+  <div class="section" id="tab-structure">
+    <p style="color:var(--muted);font-size:13px;margin-bottom:24px;">Complete generated repository structure with all 45 project folders.</p>
+    <div class="script-view">
+      <div class="code-block" id="structure-tree" style="padding:24px;font-size:11.5px;line-height:2;"></div>
+    </div>
+  </div>
+
+</main>
+
+<!-- ═══ PROJECT DETAIL MODAL ═══ -->
+<div class="modal-overlay" id="modal">
+  <div class="modal" id="modal-content">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div id="modal-inner"></div>
+  </div>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────
+const PROJECTS = [
+  { id:"01", name:"AI Chat Interface", tier:"B", level:"beginner", hours:2, rev:5000, folder:"01-chat-interface", srcType:"api", apis:["OpenAI","Claude","DeepSeek"], skills:["fetch API","JSON","DOM"], desc:"A clean chat UI that sends messages to an AI API and streams back responses." },
+  { id:"02", name:"AI Text Summarizer", tier:"C", level:"beginner", hours:2, rev:3000, folder:"02-text-summarizer", srcType:"api", apis:["OpenAI","Claude"], skills:["prompt engineering","textarea"], desc:"Paste any text, click Summarize, get a clean bullet-point or paragraph summary." },
+  { id:"03", name:"Tone Rewriter", tier:"C", level:"beginner", hours:3, rev:4000, folder:"03-tone-rewriter", srcType:"api", apis:["OpenAI","Claude"], skills:["dropdowns","prompt design"], desc:"Rewrite any text in formal, casual, friendly, or professional tone." },
+  { id:"04", name:"AI FAQ Generator", tier:"C", level:"beginner", hours:3, rev:5000, folder:"04-faq-generator", srcType:"api", apis:["OpenAI","Claude","DeepSeek"], skills:["JSON output","structured prompts"], desc:"Paste a product description, get 5-10 FAQs in JSON format rendered as an accordion UI." },
+  { id:"05", name:"Joke / Quote Generator", tier:"C", level:"beginner", hours:1, rev:2000, folder:"05-joke-quote-gen", srcType:"api", apis:["OpenAI","Grok"], skills:["buttons","clipboard API"], desc:"Click a button, get a joke or motivational quote on a selected topic." },
+  { id:"06", name:"Language Translator", tier:"C", level:"beginner", hours:3, rev:6000, folder:"06-translator", srcType:"api", apis:["OpenAI","DeepSeek"], skills:["dropdowns","language prompts"], desc:"Translate text between any two languages with auto-detect source language." },
+  { id:"07", name:"AI Code Explainer", tier:"C", level:"beginner", hours:4, rev:8000, folder:"07-code-explainer", srcType:"api", apis:["Claude","OpenAI","DeepSeek"], skills:["code blocks","highlight.js"], desc:"Paste code, pick a language, get a plain-English explanation line by line." },
+  { id:"08", name:"Mood Journal with AI Reflection", tier:"C", level:"beginner", hours:4, rev:7000, folder:"08-mood-journal", srcType:"api", apis:["Claude","OpenAI"], skills:["localStorage","date API"], desc:"Write a daily journal entry, get a warm AI reflection and mood tag stored in localStorage." },
+  { id:"09", name:"AI Resume Reviewer", tier:"A", level:"medium", hours:8, rev:20000, folder:"09-resume-reviewer", srcType:"api", apis:["Claude","OpenAI"], skills:["file upload","PDF parse","structured output"], desc:"Upload a resume PDF, get scored feedback on clarity, keywords, and ATS compatibility." },
+  { id:"10", name:"Real-Time Web Research Tool", tier:"B", level:"medium", hours:6, rev:15000, folder:"10-web-research", srcType:"api", apis:["Perplexity"], skills:["streaming","markdown render","citations"], desc:"Use Perplexity's online model to answer any question with real-time web results + cited sources." },
+  { id:"11", name:"AI Flashcard Generator", tier:"C", level:"medium", hours:6, rev:12000, folder:"11-flashcard-gen", srcType:"api", apis:["OpenAI","Claude","DeepSeek"], skills:["JSON arrays","flip animation","CSS"], desc:"Paste any topic or notes, generate a deck of flashcards with question/answer." },
+  { id:"12", name:"Multi-Model Comparison Tool", tier:"B", level:"medium", hours:8, rev:15000, folder:"12-model-comparator", srcType:"api", apis:["OpenAI","Claude","DeepSeek","Grok"], skills:["parallel fetch","grid layout"], desc:"Send the same prompt to 3+ models simultaneously and display responses side by side." },
+  { id:"13", name:"AI Email Composer", tier:"C", level:"medium", hours:5, rev:10000, folder:"13-email-composer", srcType:"api", apis:["OpenAI","Claude"], skills:["tone controls","multi-step form"], desc:"Fill in who/what/why, pick tone, generate a polished email." },
+  { id:"14", name:"Socratic AI Tutor", tier:"C", level:"medium", hours:8, rev:25000, folder:"14-socratic-tutor", srcType:"api", apis:["Claude","OpenAI"], skills:["system prompts","multi-turn chat"], desc:"A tutor that never gives answers directly — only asks guiding questions." },
+  { id:"15", name:"Product Description Generator", tier:"C", level:"medium", hours:6, rev:18000, folder:"15-product-desc-gen", srcType:"api", apis:["OpenAI","Claude","Grok"], skills:["form inputs","copy variants","tabs"], desc:"Input product name, features, audience. Generate 3 description variants." },
+  { id:"16", name:"Smart Recipe Finder", tier:"C", level:"medium", hours:6, rev:12000, folder:"16-recipe-finder", srcType:"api", apis:["OpenAI","Claude"], skills:["ingredient inputs","structured output"], desc:"Enter ingredients you have, get 3 recipes with steps and shopping list." },
+  { id:"17", name:"AI Debate Arena", tier:"C", level:"medium", hours:8, rev:15000, folder:"17-debate-arena", srcType:"api", apis:["OpenAI","Claude","DeepSeek"], skills:["turn-based UI","system roles"], desc:"Enter a topic, watch two AI personas argue for and against in alternating turns." },
+  { id:"18", name:"Sentiment Dashboard", tier:"B", level:"medium", hours:8, rev:30000, folder:"18-sentiment-dashboard", srcType:"api", apis:["OpenAI","Claude"], skills:["Chart.js","batch processing"], desc:"Paste customer reviews, run sentiment analysis on each, visualize distribution with Chart.js." },
+  { id:"19", name:"Streaming AI Code Editor", tier:"A", level:"expert", hours:20, rev:50000, folder:"19-streaming-code-editor", srcType:"api", apis:["Claude","OpenAI","DeepSeek"], skills:["SSE streaming","CodeMirror","diff view"], desc:"A live coding assistant that streams suggestions token-by-token into a CodeMirror editor." },
+  { id:"20", name:"Autonomous Web Research Agent", tier:"C", level:"expert", hours:20, rev:40000, folder:"20-research-agent", srcType:"api", apis:["Perplexity","OpenAI"], skills:["agent loop","tool calling","recursive prompts"], desc:"Give a research goal, the agent breaks it into sub-queries, searches each, synthesizes a final report." },
+  { id:"21", name:"Multi-Agent Story Writer", tier:"C", level:"expert", hours:22, rev:35000, folder:"21-multi-agent-story", srcType:"api", apis:["Claude","OpenAI","Grok"], skills:["agent roles","state machine","orchestration"], desc:"Planner, Writer, Critic, Editor agents collaborate to produce a polished story." },
+  { id:"22", name:"AI Interview Simulator", tier:"A", level:"expert", hours:15, rev:45000, folder:"22-interview-simulator", srcType:"api", apis:["Claude","OpenAI"], skills:["Web Speech API","audio","dynamic scoring"], desc:"Type or speak answers to AI-generated interview questions." },
+  { id:"23", name:"RAG Document Q&A", tier:"A", level:"expert", hours:25, rev:60000, folder:"23-rag-document-qa", srcType:"api", apis:["OpenAI","Claude"], skills:["embeddings","vector search","chunking"], desc:"Upload a PDF, chunk and embed it in-browser, then ask questions answered only from that document." },
+  { id:"24", name:"Real-Time Market Analyst", tier:"C", level:"expert", hours:20, rev:50000, folder:"24-market-analyst", srcType:"api", apis:["Perplexity","Grok"], skills:["live data","chart streaming","news fetch"], desc:"Stream live news + AI analysis of a stock/crypto ticker." },
+  { id:"25", name:"AI Visual Whiteboard", tier:"C", level:"expert", hours:22, rev:40000, folder:"25-ai-whiteboard", srcType:"api", apis:["Claude","OpenAI"], skills:["Canvas API","diagram generation","voice input"], desc:"Describe a system in voice/text; AI generates a diagram onto an HTML5 canvas." },
+  { id:"26", name:"Personalized Learning Path Generator", tier:"C", level:"expert", hours:18, rev:45000, folder:"26-learning-path-gen", srcType:"api", apis:["Claude","Perplexity"], skills:["tree rendering","SVG","progress tracking"], desc:"Tell AI your goal + current level. It generates a skill tree roadmap that adapts next steps." },
+  { id:"27", name:"Code Review Bot with PR Diff Viewer", tier:"C", level:"expert", hours:18, rev:55000, folder:"27-code-review-bot", srcType:"api", apis:["Claude","DeepSeek"], skills:["diff parsing","line comments","multi-file"], desc:"Paste a Git diff, AI reviews it line-by-line and annotates suggestions inline." },
+  { id:"28", name:"AI News Bias Detector", tier:"C", level:"expert", hours:15, rev:35000, folder:"28-bias-detector", srcType:"api", apis:["Perplexity","Claude"], skills:["bias scoring","radar chart","D3"], desc:"Enter a topic, fetch 5+ sources via Perplexity, Claude scores political bias." },
+  { id:"29", name:"AI Avatar Roleplay Engine", tier:"C", level:"expert", hours:20, rev:40000, folder:"29-avatar-roleplay", srcType:"api", apis:["Grok","OpenAI"], skills:["persona memory","long context","TTS"], desc:"Create AI characters with persistent personalities, backstory, and memory." },
+  { id:"30", name:"Full AI SaaS Dashboard", tier:"A", level:"expert", hours:40, rev:80000, folder:"30-ai-saas-dashboard", srcType:"api", apis:["OpenAI","Claude","Perplexity","DeepSeek"], skills:["SPA routing","auth","usage tracking"], desc:"Capstone: combine 5+ features into one routed SaaS app." },
+  { id:"31", name:"Voice Gradient Generator", tier:"C", level:"beginner", hours:3, rev:5000, folder:"31-voice-gradient-gen", srcType:"creative", apis:["Web Speech"], skills:["Web Speech API","CSS generation"], desc:"Speak color names or moods; the app generates beautiful CSS gradients." },
+  { id:"32", name:"Emoji Pixel Art Editor", tier:"C", level:"beginner", hours:2, rev:3000, folder:"32-emoji-pixel-art", srcType:"creative", apis:["Canvas"], skills:["Canvas API","export","grid"], desc:"A grid-based canvas where each cell is an emoji. Click to place, export as image." },
+  { id:"33", name:"Habit Dashboard", tier:"C", level:"beginner", hours:4, rev:8000, folder:"33-habit-dashboard", srcType:"creative", apis:["Fetch","IndexedDB"], skills:["IndexedDB","API integration","charts"], desc:"Track daily habits, visualize streaks, and connect to weather/quote APIs." },
+  { id:"34", name:"CSS Art Sandbox", tier:"C", level:"beginner", hours:3, rev:4000, folder:"34-css-art-sandbox", srcType:"creative", apis:["OpenAI","Claude"], skills:["CSS Grid","prompt mapping"], desc:"Type a scene description; AI maps it to CSS grid/shapes and renders abstract art." },
+  { id:"35", name:"Typography Playground", tier:"C", level:"beginner", hours:3, rev:5000, folder:"35-typography-playground", srcType:"creative", apis:["OpenAI","Claude"], skills:["Google Fonts","suggestion engine"], desc:"Enter your brand vibe; AI suggests font pairings from Google Fonts." },
+  { id:"36", name:"AI Playground UI", tier:"B", level:"medium", hours:8, rev:15000, folder:"36-ai-playground-ui", srcType:"creative", apis:["OpenAI","Claude","DeepSeek"], skills:["JS","markdown render","multi-model"], desc:"Configure model, temperature, system prompt, and compare outputs." },
+  { id:"37", name:"Emotion Mirror", tier:"A", level:"medium", hours:10, rev:20000, folder:"37-emotion-mirror", srcType:"creative", apis:["TensorFlow.js"], skills:["face detection","webcam","emotion mapping"], desc:"Webcam feed runs face-api.js emotion detection with real-time effects." },
+  { id:"38", name:"Mood Board WebRTC", tier:"B", level:"medium", hours:8, rev:25000, folder:"38-moodboard-webrtc", srcType:"creative", apis:["WebRTC"], skills:["WebRTC","peer-to-peer","real-time sync"], desc:"Collaborative mood board where two users share and arrange images in real-time." },
+  { id:"39", name:"Snippet Manager with AI Explainer", tier:"C", level:"medium", hours:6, rev:20000, folder:"39-snippet-manager", srcType:"creative", apis:["Claude","DeepSeek"], skills:["CodeMirror","prompt engine","localStorage"], desc:"Save code snippets with tags. Get AI-powered line-by-line explanation." },
+  { id:"40", name:"CSV Chart Builder with AI Insights", tier:"A", level:"medium", hours:8, rev:30000, folder:"40-csv-chart-builder", srcType:"creative", apis:["OpenAI","Claude"], skills:["Chart.js","CSV parse","AI recommendations"], desc:"Upload CSV, auto-detect columns, render charts, get AI visualisation advice." },
+  { id:"41", name:"Local LLM Client (Offline AI)", tier:"C", level:"expert", hours:20, rev:50000, folder:"41-local-llm-client", srcType:"creative", apis:["Transformers.js"], skills:["WASM","model loading","offline"], desc:"Run a quantized LLM entirely in the browser — no server, no API key." },
+  { id:"42", name:"WebGL Galaxy Generator", tier:"B", level:"expert", hours:25, rev:40000, folder:"42-webgl-galaxy", srcType:"creative", apis:["Three.js"], skills:["Three.js","shaders","GLSL","WebGL"], desc:"Procedurally generate 3D galaxy visuals in Three.js with GLSL shaders." },
+  { id:"43", name:"P2P Pastebin (Decentralized)", tier:"C", level:"expert", hours:18, rev:45000, folder:"43-p2p-pastebin", srcType:"creative", apis:["WebRTC"], skills:["WebRTC","data channels","encryption"], desc:"Share text and code snippets peer-to-peer directly between browsers." },
+  { id:"44", name:"AI Drawing App (Style Transfer)", tier:"C", level:"expert", hours:22, rev:60000, folder:"44-ai-drawing-app", srcType:"creative", apis:["TensorFlow.js"], skills:["TensorFlow.js","Canvas","style transfer"], desc:"Draw on canvas, apply neural style transfer to transform your sketch into art." },
+  { id:"45", name:"VR 360° Viewer with AI Narration", tier:"C", level:"expert", hours:15, rev:35000, folder:"45-vr-viewer", srcType:"creative", apis:["Three.js","OpenAI"], skills:["Three.js","360 rendering","TTS"], desc:"Display 360° panorama images in Three.js. Click hotspots for AI narration via TTS." }
+];
+
+// ── TABS ──────────────────────────────────────────────────────────
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+  });
+});
+
+// ── RENDER PROJECTS ───────────────────────────────────────────────
+function renderProjects(list) {
+  const grid = document.getElementById('project-grid');
+  document.getElementById('count').textContent = list.length;
+  grid.innerHTML = list.map(p => `
+    <div class="proj-card tier-${p.tier.toLowerCase()}" onclick="openModal('${p.id}')">
+      <div class="proj-header">
+        <div class="proj-num">${p.id}</div>
+        <div class="proj-name">${p.name}</div>
+        <span class="tier-badge ${p.tier}">Tier ${p.tier}</span>
+      </div>
+      <div class="proj-desc">${p.desc}</div>
+      <div class="proj-meta">
+        <span class="meta-chip hours">⏱ ${p.hours}h</span>
+        <span class="meta-chip rev">₹${(p.rev/1000).toFixed(0)}K/mo</span>
+        <span class="meta-chip level-${p.level}">${p.level === 'beginner' ? '🟢' : p.level === 'medium' ? '🟡' : '🔴'} ${p.level}</span>
+        <span class="meta-chip">${p.srcType === 'api' ? '🤖 API' : '🎨 Creative'}</span>
+      </div>
+      <div class="proj-apis">
+        ${p.apis.map(a => `<span class="api-tag">${a}</span>`).join('')}
+        ${p.skills.map(s => `<span class="skill-tag">${s}</span>`).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── FILTERS ───────────────────────────────────────────────────────
+function applyFilters() {
+  const q = document.getElementById('search').value.toLowerCase();
+  const level = document.getElementById('filter-level').value;
+  const type = document.getElementById('filter-type').value;
+  const tier = document.getElementById('filter-tier').value;
+  const api = document.getElementById('filter-api').value;
+  const filtered = PROJECTS.filter(p => {
+    if (q && !p.name.toLowerCase().includes(q) && !p.desc.toLowerCase().includes(q) && !p.apis.join(' ').toLowerCase().includes(q) && !p.skills.join(' ').toLowerCase().includes(q)) return false;
+    if (level && p.level !== level) return false;
+    if (type && p.srcType !== type) return false;
+    if (tier && p.tier !== tier) return false;
+    if (api && !p.apis.includes(api)) return false;
+    return true;
+  });
+  renderProjects(filtered);
+}
+['search','filter-level','filter-type','filter-tier','filter-api'].forEach(id => {
+  document.getElementById(id).addEventListener('input', applyFilters);
+  document.getElementById(id).addEventListener('change', applyFilters);
+});
+
+// ── MODAL ─────────────────────────────────────────────────────────
+function openModal(id) {
+  const p = PROJECTS.find(x => x.id === id);
+  const monPath = p.srcType === 'api' ? `api-projects/${p.folder}/` : `frontend-creative/${p.folder}/`;
+  const monoTip = p.rev >= 50000
+    ? 'Enterprise / SaaS — white-label or subscription dashboard (₹50K–₹80K/month)'
+    : p.rev >= 20000
+    ? 'Freelance + SaaS — ₹20K–₹50K per client, or micro-tool SaaS'
+    : 'Gumroad / Micro-tool — ₹299–₹999 one-time, or monthly service';
+
+  document.getElementById('modal-inner').innerHTML = `
+    <div class="modal-title">${p.name}</div>
+    <div class="modal-id">#${p.id} · ${monPath} · Tier ${p.tier} · ${p.level}</div>
+    <div class="modal-desc">${p.desc}</div>
+
+    <div class="detail-grid">
+      <div class="detail-item"><div class="detail-label">Build Time</div><div class="detail-value amber">${p.hours}h <span style="font-size:12px;font-weight:400;color:var(--muted)">(${p.hours <= 4 ? '1–2 days' : p.hours <= 10 ? '3–6 days' : '8–20 days'})</span></div></div>
+      <div class="detail-item"><div class="detail-label">Revenue Potential</div><div class="detail-value green">₹${p.rev.toLocaleString()}/mo</div></div>
+      <div class="detail-item"><div class="detail-label">Tier</div><div class="detail-value">${p.tier}</div></div>
+      <div class="detail-item"><div class="detail-label">Type</div><div class="detail-value blue">${p.srcType === 'api' ? 'AI API' : 'Frontend Creative'}</div></div>
+    </div>
+
+    <div class="modal-section-title">APIs Used</div>
+    <div class="tag-group">${p.apis.map(a => `<span class="api-tag" style="font-size:11px;padding:4px 10px;">${a}</span>`).join('')}</div>
+
+    <div class="modal-section-title">Key Skills</div>
+    <div class="tag-group">${p.skills.map(s => `<span class="skill-tag" style="font-size:11px;padding:4px 10px;">${s}</span>`).join('')}</div>
+
+    <div class="modal-section-title">Monetization Path</div>
+    <div class="modal-mono">${monoTip}</div>
+
+    <div class="modal-section-title">GIF Recording Script (5-Step Formula)</div>
+    <div class="modal-mono">Step 1 (0–5s)   · Show empty input / blank state
+Step 2 (5–20s)  · Paste REAL data. Trigger the AI call.
+Step 3 (20–30s) · Let output render completely. Don't cut early.
+Step 4 (30–40s) · Show ONE second interaction (tone/model/filter)
+Step 5 (40–45s) · Final result. Cursor still. Freeze 2 seconds.
+
+Resolution: 1280×720. Show cursor ON. Highlight clicks ON.</div>
+
+    <div class="modal-section-title">Folder</div>
+    <div class="modal-mono"><code>${monPath}</code>
+├── index.html      ← working build
+├── README.md       ← project notes + monetization
+└── assets/         ← images, icons</div>
+  `;
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+document.getElementById('modal').addEventListener('click', e => { if (e.target === document.getElementById('modal')) closeModal(); });
+
+// ── README TABLES ─────────────────────────────────────────────────
+function fillReadmeTables() {
+  ['beginner','medium','expert'].forEach(level => {
+    const tbody = document.getElementById('tbl-' + level);
+    const rows = PROJECTS.filter(p => p.level === level).map(p => {
+      const folder = p.srcType === 'api' ? 'api-projects' : 'frontend-creative';
+      return `<tr>
+        <td>${p.id}</td>
+        <td><a href="#" onclick="event.preventDefault();openModal('${p.id}')">${p.name}</a></td>
+        <td>${p.apis.join(' · ')}</td>
+        <td>${p.skills.join(' · ')}</td>
+        <td>${p.hours}h</td>
+        <td>₹${(p.rev/1000).toFixed(0)}K</td>
+      </tr>`;
+    }).join('');
+    tbody.innerHTML = rows;
+  });
+}
+
+// ── GIF CHECKLIST ─────────────────────────────────────────────────
+function fillGifList() {
+  ['A','B','C'].forEach(tier => {
+    const el = document.getElementById('gif-' + tier.toLowerCase());
+    el.innerHTML = PROJECTS.filter(p => p.tier === tier).map(p => `
+      <div class="gif-item">
+        <div class="gif-check"></div>
+        <div class="gif-id">#${p.id}</div>
+        <div class="gif-name">${p.name} <span style="font-size:11px;color:var(--muted);">· ${p.hours}h build · ₹${(p.rev/1000).toFixed(0)}K/mo</span></div>
+        <div class="gif-tier"><span class="tier-badge ${tier}">Tier ${tier}</span></div>
+      </div>
+    `).join('');
+  });
+}
+
+// ── STRUCTURE TREE ─────────────────────────────────────────────────
+function buildStructureTree() {
+  const api = PROJECTS.filter(p => p.srcType === 'api');
+  const creative = PROJECTS.filter(p => p.srcType === 'creative');
+  let tree = `ai-frontend-projects/\n│\n├── api-projects/              ← #01–30 · AI API Projects\n`;
+  api.forEach((p, i) => {
+    const last = i === api.length - 1;
+    tree += `│   ${last ? '└' : '├'}── ${p.folder}/\n`;
+    tree += `│   ${last ? ' ' : '│'}   ├── index.html\n`;
+    tree += `│   ${last ? ' ' : '│'}   └── README.md\n`;
+  });
+  tree += `│\n├── frontend-creative/         ← #31–45 · Frontend Creative\n`;
+  creative.forEach((p, i) => {
+    const last = i === creative.length - 1;
+    tree += `│   ${last ? '└' : '├'}── ${p.folder}/\n`;
+    tree += `│   ${last ? ' ' : '│'}   ├── index.html\n`;
+    tree += `│   ${last ? ' ' : '│'}   └── README.md\n`;
+  });
+  tree += `│\n├── assets/\n│   └── demos/\n│       └── .gitkeep\n│\n├── master_ai_frontend_roadmap.html   ← Interactive roadmap\n├── GIFS_STATUS.md                    ← Recording checklist\n├── README.md                         ← Main repo README\n├── .gitignore\n└── LICENSE                           ← MIT 2025 Milan (SNTL84)`;
+  document.getElementById('structure-tree').textContent = tree;
+}
+
+// ── SECTION TOGGLE ─────────────────────────────────────────────────
+function toggleSection(btn) {
+  btn.classList.toggle('open');
+  btn.nextElementSibling.classList.toggle('open');
+}
+
+// ── INIT ──────────────────────────────────────────────────────────
+renderProjects(PROJECTS);
+fillReadmeTables();
+fillGifList();
+buildStructureTree();
+</script>
+</body>
+</html>
